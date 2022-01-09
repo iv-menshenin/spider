@@ -53,7 +53,7 @@ func (w *Walker) Init(context.Context) error {
 			debug.PrintStack()
 		}
 	}()
-	if err := w.prepare(); err != nil {
+	if err := w.parseProject(); err != nil {
 		return err
 	}
 	if err := w.startAnalyse(); err != nil {

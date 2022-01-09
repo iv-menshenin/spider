@@ -11,56 +11,59 @@ type (
 	}
 )
 
-func (w *Walker) parse(name, path string) (packages, error) {
-	p, err := w.parser.Parse(path)
-	if err != nil {
-		return nil, err
-	}
-	w.pkgs = append(w.pkgs, parsed{
-		path: path,
-		name: name,
-		pkgs: p,
-	})
-	return p, nil
-}
-
-func (w *Walker) prepare() error {
+func (w *Walker) parseProject() error {
 	if packName := getCurrentPackageName(w.projectPath); packName != "" {
 		w.pkgPaths[packName] = w.projectPath
 	}
 	for len(w.queue) > 0 {
-		packName := ""
-		currPack := w.queue[0]
-		packageName := w.normalPackageName(currPack)
-		pkgs, err := w.parse(currPack, packageName)
-		if err != nil {
+		packageName := w.queue[0]
+		packagePath := w.detectPackagePath(packageName)
+		if err := w.parsePackage(packageName, packagePath); err != nil {
 			return err
 		}
-		for pkgName, p := range pkgs {
-			if packName == "" && !strings.HasSuffix(pkgName, "_test") {
-				packName = pkgName
-			}
-			for _, file := range p.Files {
-				for _, i := range file.Imports {
-					packagePath := i.Path.Value
-					if len(packagePath) < 3 {
-						continue
-					}
-					packagePath = packagePath[1 : len(packagePath)-1]
-					if isStdPackageName(packagePath) {
-						continue
-					}
-					w.appendToQueue(packagePath)
-				}
-			}
-		}
-		if packName != "" {
-			w.pkgNames[currPack] = packName
-		}
-		w.parsed = append(w.parsed, currPack)
+		w.parsed = append(w.parsed, packageName)
 		w.queue = w.queue[1:]
 	}
 	return nil
+}
+
+func (w *Walker) parsePackage(name, path string) error {
+	parsedPackages, err := w.parser.Parse(path)
+	if err != nil {
+		return err
+	}
+	w.pkgs = append(w.pkgs, parsed{
+		path: path,
+		name: name,
+		pkgs: parsedPackages,
+	})
+	var packName string
+	for pkgName, p := range parsedPackages {
+		if packName == "" && !strings.HasSuffix(pkgName, "_test") {
+			packName = pkgName
+		}
+		for _, file := range p.Files {
+			w.addImportsToQueue(file.Imports)
+		}
+	}
+	if packName != "" {
+		w.pkgNames[name] = packName
+	}
+	return nil
+}
+
+func (w *Walker) addImportsToQueue(imports []*ast.ImportSpec) {
+	for _, i := range imports {
+		importedName := i.Path.Value
+		if len(importedName) < 3 {
+			continue
+		}
+		importedName = importedName[1 : len(importedName)-1]
+		if isStdPackageName(importedName) {
+			continue
+		}
+		w.appendToQueue(importedName)
+	}
 }
 
 func (w *Walker) appendToQueue(packagePath string) {
@@ -77,17 +80,20 @@ func (w *Walker) appendToQueue(packagePath string) {
 	w.queue = append(w.queue, packagePath)
 }
 
-func (w *Walker) normalPackageName(packagePath string) string {
-	if strings.HasPrefix(packagePath, "./") {
-		return packagePath
+// detectPackagePath defines the relationship between the full package name and its location in the file system.
+// Returns the full path to the specified package files in the file system if the package was found in the w.pkgPaths registry.
+// If no package was found, it tries to suggest a relative path through the `vendor` directory
+func (w *Walker) detectPackagePath(fullPackagePath string) string {
+	if strings.HasPrefix(fullPackagePath, "./") {
+		return fullPackagePath
 	}
-	for pattern, path := range w.pkgPaths {
-		if pattern == "" {
+	for knownPackageName, knownPackagePath := range w.pkgPaths {
+		if knownPackageName == "" {
 			continue
 		}
-		if strings.HasPrefix(packagePath, pattern) {
-			return path + "/" + packagePath[len(pattern):]
+		if strings.HasPrefix(fullPackagePath, knownPackageName) {
+			return knownPackagePath + "/" + fullPackagePath[len(knownPackageName):]
 		}
 	}
-	return "./vendor/" + packagePath
+	return "./vendor/" + fullPackagePath
 }
