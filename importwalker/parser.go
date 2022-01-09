@@ -91,24 +91,3 @@ func (w *Walker) normalPackageName(packagePath string) string {
 	}
 	return "./vendor/" + packagePath
 }
-
-//func (w *Walker) findDeclaration(pkgName, pkgNames, objName string) []ast.Node {
-//	for _,pkg := range w.pkgs {
-//		if pkg.name == pkgName {
-//			println(pkgNames)
-//			for _, file := range pkg.pkgs[pkgNames].Files {
-//				for _, decl := range file.Decls {
-//					switch n := decl.(type) {
-//					case *ast.FuncDecl:
-//						if n.Name.Name == objName {
-//							for _, rt := range n.Type.Results.List {
-//								rt.Type
-//							}
-//						}
-//					}
-//				}
-//			}
-//		}
-//	}
-//	return nil
-//}
