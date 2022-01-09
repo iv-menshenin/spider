@@ -78,6 +78,6 @@ func New(projectPath, mainPath string) *Walker {
 		pkgPaths:    pkgPaths,
 		pkgNames:    make(map[string]string),
 		projectPath: projectPath,
-		parser:      parser.New(),
+		parser:      parser.New(parser.FilterExcludeTest),
 	}
 }

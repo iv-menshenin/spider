@@ -7,12 +7,12 @@ import (
 
 type (
 	packageParser interface {
-		Parse(name, path string) (map[string]*ast.Package, error)
+		Parse(path string) (map[string]*ast.Package, error)
 	}
 )
 
 func (w *Walker) parse(name, path string) (packages, error) {
-	p, err := w.parser.Parse(name, path)
+	p, err := w.parser.Parse(path)
 	if err != nil {
 		return nil, err
 	}
