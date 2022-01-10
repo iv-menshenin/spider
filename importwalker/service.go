@@ -22,6 +22,7 @@ type (
 	Walker struct {
 		mainPath    string
 		projectPath string
+		analyser    analyser
 	}
 )
 

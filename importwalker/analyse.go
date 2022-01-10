@@ -10,8 +10,9 @@ import (
 
 type (
 	analyser struct {
-		tree       model.AST
-		precedents []precedent
+		tree          model.AST
+		precedents    []precedent
+		filesAnalysed []string
 	}
 )
 
@@ -19,12 +20,12 @@ func (w *Walker) startAnalyse(tree model.AST) error {
 	if tree.Len() == 0 {
 		return nil
 	}
-	var a = analyser{
+	w.analyser = analyser{
 		tree:       tree,
 		precedents: []precedent{},
 	}
 	for p := range tree.Iter() {
-		if err := a.analyse(p); err != nil {
+		if err := w.analyser.analyse(p); err != nil {
 			return err
 		}
 	}
@@ -70,4 +71,5 @@ func (a *analyser) analyseFile(fileName string, f *ast.File, p model.Parsed) {
 	var v = visitor.New(f, &reg, a.tree)
 	ast.Walk(v, f)
 	a.precedents = append(a.precedents, reg.detected...)
+	a.filesAnalysed = append(a.filesAnalysed, fileName)
 }

@@ -84,14 +84,14 @@ func (v *visitor) register(name string, i model.Imported) {
 	}
 }
 
-func (a *visitor) makeFileScope(f *ast.File) []obj {
+func (v *visitor) makeFileScope(f *ast.File) []obj {
 	var scope []obj
 	for _, imp := range f.Imports {
 		if imp.Path == nil {
 			continue
 		}
 		packagePath := imp.Path.Value[1 : len(imp.Path.Value)-1]
-		pkg := a.lookuper.Lookup(packagePath)
+		pkg := v.lookuper.Lookup(packagePath)
 		if pkg == nil {
 			continue
 		}
@@ -102,7 +102,7 @@ func (a *visitor) makeFileScope(f *ast.File) []obj {
 		}
 		scope = append(scope, obj{
 			name:     impAlias,
-			imported: importedPackage{path: packagePath, pkg: packageTree, makeFileScope: a.makeFileScope},
+			imported: importedPackage{path: packagePath, pkg: packageTree, makeFileScope: v.makeFileScope},
 		})
 	}
 	return scope
