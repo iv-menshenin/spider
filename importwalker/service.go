@@ -2,6 +2,7 @@ package importwalker
 
 import (
 	"context"
+	"github.com/iv-menshenin/spider/importwalker/internal/model"
 	"go/token"
 	"log"
 	"runtime/debug"
@@ -11,25 +12,17 @@ import (
 )
 
 type (
-	level     int
 	precedent struct {
 		dependedOn  string
 		packageName string
 		fileName    string
 		filePos     token.Pos
-		level       level
+		level       model.Level
 	}
 	Walker struct {
 		mainPath    string
 		projectPath string
 	}
-)
-
-const (
-	levelImportNone level = iota
-	levelImportMethod
-	levelImportFunc
-	levelImportStruct
 )
 
 func (w *Walker) Init(context.Context) error {

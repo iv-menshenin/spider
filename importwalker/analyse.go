@@ -2,6 +2,7 @@ package importwalker
 
 import (
 	"github.com/iv-menshenin/spider/importwalker/internal/model"
+	"github.com/iv-menshenin/spider/importwalker/internal/visitor"
 	"go/ast"
 	"go/token"
 	"strings"
@@ -52,10 +53,10 @@ type wRegistrar struct {
 	detected    []precedent
 }
 
-func (r *wRegistrar) register(pos token.Pos, i imported) {
-	for _, l := range i.getLevel() {
+func (r *wRegistrar) Register(pos token.Pos, i model.Imported) {
+	for _, l := range i.GetLevel() {
 		r.detected = append(r.detected, precedent{
-			dependedOn:  i.getPackage(),
+			dependedOn:  i.GetPackage(),
 			packageName: r.packageName,
 			fileName:    r.fileName,
 			filePos:     pos,
@@ -66,35 +67,7 @@ func (r *wRegistrar) register(pos token.Pos, i imported) {
 
 func (a *analyser) analyseFile(fileName string, f *ast.File, p model.Parsed) {
 	var reg = wRegistrar{packageName: p.GetPath(), fileName: fileName}
-	var v = visitor{
-		walker: &reg,
-		scope:  a.makeFileScope(f),
-		node:   f,
-	}
-	ast.Walk(&v, f)
+	var v = visitor.New(f, &reg, a.tree)
+	ast.Walk(v, f)
 	a.precedents = append(a.precedents, reg.detected...)
-}
-
-func (a *analyser) makeFileScope(f *ast.File) []obj {
-	var scope []obj
-	for _, imp := range f.Imports {
-		if imp.Path == nil {
-			continue
-		}
-		packagePath := imp.Path.Value[1 : len(imp.Path.Value)-1]
-		pkg := a.tree.Lookup(packagePath)
-		if pkg == nil {
-			continue
-		}
-		var packageTree = pkg.Package("")
-		var impAlias = packageTree.Name
-		if imp.Name != nil {
-			impAlias = imp.Name.String()
-		}
-		scope = append(scope, obj{
-			name:     impAlias,
-			imported: importedPackage{path: packagePath, pkg: packageTree, makeFileScope: a.makeFileScope},
-		})
-	}
-	return scope
 }
