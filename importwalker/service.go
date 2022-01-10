@@ -2,21 +2,16 @@ package importwalker
 
 import (
 	"context"
-	"github.com/iv-menshenin/spider/importwalker/parser"
-	"go/ast"
 	"go/token"
 	"log"
 	"runtime/debug"
+
+	"github.com/iv-menshenin/spider/importwalker/internal/fileparser"
+	"github.com/iv-menshenin/spider/importwalker/internal/projparser"
 )
 
 type (
-	level    int
-	packages map[string]*ast.Package
-	parsed   struct {
-		path string
-		name string
-		pkgs packages
-	}
+	level     int
 	precedent struct {
 		dependedOn  string
 		packageName string
@@ -25,16 +20,8 @@ type (
 		level       level
 	}
 	Walker struct {
-		pkgs   []parsed
-		queue  []string
-		parsed []string
-
-		pkgNames    map[string]string
-		pkgPaths    map[string]string
+		mainPath    string
 		projectPath string
-
-		parser     packageParser
-		precedents []precedent
 	}
 )
 
@@ -53,16 +40,18 @@ func (w *Walker) Init(context.Context) error {
 			debug.PrintStack()
 		}
 	}()
-	if err := w.parseProject(); err != nil {
+	var parser = projparser.New(w.projectPath, w.mainPath, fileparser.New(fileparser.FilterExcludeTest))
+	ast, err := parser.Parse()
+	if err != nil {
 		return err
 	}
-	if err := w.startAnalyse(); err != nil {
+	if err = w.startAnalyse(ast); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (w *Walker) Ping(ctx context.Context) error {
+func (w *Walker) Ping(context.Context) error {
 	return nil
 }
 
@@ -71,13 +60,8 @@ func (w *Walker) Close() error {
 }
 
 func New(projectPath, mainPath string) *Walker {
-	var pkgPaths = make(map[string]string)
-	pkgPaths[""] = mainPath
 	return &Walker{
-		queue:       []string{mainPath},
-		pkgPaths:    pkgPaths,
-		pkgNames:    make(map[string]string),
+		mainPath:    mainPath,
 		projectPath: projectPath,
-		parser:      parser.New(parser.FilterExcludeTest),
 	}
 }

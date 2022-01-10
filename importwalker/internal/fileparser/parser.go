@@ -1,4 +1,4 @@
-package parser
+package fileparser
 
 import (
 	"go/ast"
@@ -16,11 +16,13 @@ type (
 	}
 )
 
+// FilterExcludeTest filters out test files from packages
 func FilterExcludeTest(fi fs.FileInfo) bool {
 	return !strings.HasSuffix(fi.Name(), "_test.go")
 }
 
-func FilterIncludeAll(fi fs.FileInfo) bool {
+// FilterIncludeAll allows you to get all files without any filtering
+func FilterIncludeAll(fs.FileInfo) bool {
 	return true
 }
 

@@ -1,4 +1,4 @@
-package importwalker
+package projparser
 
 import (
 	"bufio"
