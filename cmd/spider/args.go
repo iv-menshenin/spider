@@ -4,12 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"strings"
 )
 
 type (
 	Args struct {
 		ParseFile string
+		WebPath   string
 		ParseOnly bool
 	}
 )
@@ -20,6 +22,7 @@ func parseArgs() (a Args, err error) {
 		err = errors.New("specify some go-file path")
 		return
 	}
+	a.WebPath = path.Dir(os.Args[0])
 	a.ParseFile = cmdArgs[len(cmdArgs)-1]
 	var maxArgIndex = len(cmdArgs) - 1
 	for i := 1; i < maxArgIndex; i++ {
@@ -40,6 +43,12 @@ func parseArgs() (a Args, err error) {
 				val = cmdArgs[i]
 			}
 			a.ParseOnly = boolArg(val)
+		case "-W", "--web":
+			if !hasVal && i+1 < maxArgIndex {
+				i++
+				val = cmdArgs[i]
+			}
+			a.WebPath = val
 		default:
 			err = fmt.Errorf("unknown argument: %s", arg)
 			return

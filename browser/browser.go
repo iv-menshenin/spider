@@ -1,4 +1,4 @@
-package main
+package browser
 
 import (
 	"errors"
@@ -27,7 +27,7 @@ func getVisualisers() (visualisers []string) {
 	return
 }
 
-func browser(fileName string) error {
+func New(fileName string) error {
 	for _, v := range getVisualisers() {
 		args := strings.Split(v, " ")
 		if len(args) == 0 {

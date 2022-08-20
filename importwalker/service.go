@@ -12,12 +12,12 @@ import (
 )
 
 type (
-	precedent struct {
-		dependedOn  string
-		packageName string
-		fileName    string
-		filePos     token.Pos
-		level       model.Level
+	Precedent struct {
+		DependedOn  string
+		PackageName string
+		FileName    string
+		FilePos     token.Pos
+		Level       model.Level
 	}
 	Walker struct {
 		mainPath    string
@@ -25,6 +25,10 @@ type (
 		analyser    analyser
 	}
 )
+
+func (w *Walker) Ident() string {
+	return "walker"
+}
 
 func (w *Walker) Init(context.Context) error {
 	defer func() {

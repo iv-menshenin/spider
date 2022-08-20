@@ -1,0 +1,15 @@
+/* CSS */
+body {
+    background-color: #2b2b2b;
+    font-family: sans-serif;
+    font-size: x-large;
+    color: #afa79a;
+}
+
+a {
+    color: #6191b6;
+}
+
+a:hover {
+    color: white;
+}

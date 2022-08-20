@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
 	"github.com/iv-menshenin/appctl"
 	"github.com/iv-menshenin/spider/importwalker"
+
+	"github.com/iv-menshenin/spider/browser"
+	"github.com/iv-menshenin/spider/http"
 )
 
 type (
@@ -59,17 +61,18 @@ func (a *application) mainFunc(_ context.Context, halt <-chan struct{}) error {
 	a.registerHandlers()
 	go func() {
 		<-time.After(time.Second)
-		if err := browser(startPage); err != nil {
+		if err := browser.New(startPage); err != nil {
 			log.Println(err)
 		}
 	}()
 	if a.args.ParseOnly {
 		return nil
 	}
-	return startHttp(halt)
+	return http.StartHTTP(halt)
 }
 
 func (a *application) registerHandlers() {
+	http.RegisterWWW(a.args.WebPath)
 	//http.Handle("/import/imports-net", &Net{
 	//	graphGetter: a.walker,
 	//})
@@ -81,5 +84,4 @@ func (a *application) registerHandlers() {
 	//	basePath: a.basePath,
 	//	analyser: a.walker,
 	//})
-	http.Handle("/web/", &Web{})
 }

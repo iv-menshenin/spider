@@ -1,6 +1,6 @@
 // dependencies analyser
 module github.com/iv-menshenin/spider
 
-go 1.16
+go 1.18
 
-require github.com/iv-menshenin/appctl v0.0.0-20211116032046-6478c01c99eb
+require github.com/iv-menshenin/appctl v1.0.4

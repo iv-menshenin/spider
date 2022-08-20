@@ -1,4 +1,4 @@
-package main
+package http
 
 import (
 	"context"
@@ -19,7 +19,9 @@ type (
 		GetLinks(scope []string, format, sep string, writer io.Writer) error
 		GetNodes(scope []string, format, sep string, writer io.Writer) error
 	}
-	Web struct{}
+	Web struct {
+		webPath string
+	}
 	Net struct {
 		graphGetter importGraphGetter
 	}
@@ -36,7 +38,7 @@ type (
 	}
 )
 
-func startHttp(stop <-chan struct{}) error {
+func StartHTTP(stop <-chan struct{}) error {
 	server := &http.Server{Addr: ":28080"}
 	chErr := make(chan error, 2)
 	go func() {
@@ -57,7 +59,7 @@ func startHttp(stop <-chan struct{}) error {
 }
 
 func (f *Web) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	file, err := os.Open("." + r.URL.Path)
+	file, err := os.Open(f.webPath + r.URL.Path)
 	if err != nil {
 		http.NotFound(w, r)
 		return

@@ -11,7 +11,7 @@ import (
 type (
 	analyser struct {
 		tree          model.AST
-		precedents    []precedent
+		precedents    []Precedent
 		filesAnalysed []string
 	}
 )
@@ -22,7 +22,7 @@ func (w *Walker) startAnalyse(tree model.AST) error {
 	}
 	w.analyser = analyser{
 		tree:       tree,
-		precedents: []precedent{},
+		precedents: []Precedent{},
 	}
 	for p := range tree.Iter() {
 		if err := w.analyser.analyse(p); err != nil {
@@ -51,17 +51,17 @@ func (a *analyser) analyse(p model.Parsed) error {
 type wRegistrar struct {
 	packageName string
 	fileName    string
-	detected    []precedent
+	detected    []Precedent
 }
 
 func (r *wRegistrar) Register(pos token.Pos, i model.Imported) {
 	for _, l := range i.GetLevel() {
-		r.detected = append(r.detected, precedent{
-			dependedOn:  i.GetPackage(),
-			packageName: r.packageName,
-			fileName:    r.fileName,
-			filePos:     pos,
-			level:       l,
+		r.detected = append(r.detected, Precedent{
+			DependedOn:  i.GetPackage(),
+			PackageName: r.packageName,
+			FileName:    r.fileName,
+			FilePos:     pos,
+			Level:       l,
 		})
 	}
 }
