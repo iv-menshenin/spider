@@ -18,4 +18,25 @@ const (
 	LevelImportMethod
 	LevelImportFunc
 	LevelImportStruct
+	MaxLevel
 )
+
+func (l Level) String() string {
+	switch l {
+
+	case LevelImportNone:
+		return "ImportNone"
+
+	case LevelImportMethod:
+		return "ImportMethod"
+
+	case LevelImportFunc:
+		return "ImportFunc"
+
+	case LevelImportStruct:
+		return "ImportStruct"
+
+	default:
+		return "UnknownDependency"
+	}
+}

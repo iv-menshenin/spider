@@ -9,7 +9,7 @@ import (
 
 type (
 	registrar interface {
-		Register(token.Pos, model.Imported)
+		Register(token.Pos, token.Pos, model.Imported)
 	}
 	obj struct {
 		name     string

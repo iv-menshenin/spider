@@ -56,11 +56,9 @@ func (v *visitor) register(name string, i model.Imported) {
 	if i == nil {
 		return
 	}
-	if v.node != nil {
-		v.walker.Register(v.node.Pos(), i)
-	} else {
-		v.walker.Register(0, i)
-	}
+	pos, end := v.node.Pos(), v.node.End()
+	v.walker.Register(pos, end, i)
+
 	if a, ok := v.node.(*ast.AssignStmt); ok {
 		for nn, expr := range a.Lhs {
 			if ident, ok := expr.(*ast.Ident); ok {

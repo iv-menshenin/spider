@@ -2,12 +2,12 @@ package importwalker
 
 import (
 	"context"
-	"github.com/iv-menshenin/spider/importwalker/internal/model"
 	"go/token"
 	"log"
 	"runtime/debug"
 
 	"github.com/iv-menshenin/spider/importwalker/internal/fileparser"
+	"github.com/iv-menshenin/spider/importwalker/internal/model"
 	"github.com/iv-menshenin/spider/importwalker/internal/projparser"
 )
 
@@ -15,8 +15,9 @@ type (
 	Precedent struct {
 		DependedOn  string
 		PackageName string
+		PackagePath string
 		FileName    string
-		FilePos     token.Pos
+		FilePos     [2]token.Pos
 		Level       model.Level
 	}
 	Walker struct {
@@ -44,6 +45,9 @@ func (w *Walker) Init(context.Context) error {
 		return err
 	}
 	if err = w.startAnalyse(ast); err != nil {
+		return err
+	}
+	if err = w.prepareInfo(); err != nil {
 		return err
 	}
 	return nil
